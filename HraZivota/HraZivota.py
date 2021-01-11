@@ -2,6 +2,7 @@
 import sys
 import pygame #https://www.pygame.org/docs/tut/PygameIntro.html
 import random
+import time
 
 pygame.display.set_caption("Hra života")
 
@@ -10,6 +11,7 @@ MRTVA_BUNKA = 0, 0, 0 #RGB 8bit cerna obrazovka
 ZIVA_BUNKA = 255, 0, 255 #magenta
 VELIKOST_BUNKY = 10
 
+# print(temp)
 class Hra: #tvorba tridy
 
     def __init__(self): #metodu zavola python vzdycky, kdyz vytvori novy objekt
@@ -23,8 +25,17 @@ class Hra: #tvorba tridy
         self.pocet_sloupcu = int(SIRKA/VELIKOST_BUNKY)
         self.pocet_radku = int(VYSKA/VELIKOST_BUNKY)
 
-        self.mrizky = ([[0] * self.pocet_radku] * self.pocet_sloupcu,
-                       [[0] * self.pocet_radku] * self.pocet_sloupcu)
+        self.mrizky = []
+
+        radky = []
+        for cislo_radku in range(self.pocet_radku):
+            temp = []
+            for cislo_sloupce in range(self.pocet_sloupcu):
+                temp.append(0)
+            radky.append(temp)
+
+        self.mrizky.append(radky)
+
         self.aktivni_mrizka = 0;
 
         self.nastav_mrizku()
@@ -32,18 +43,16 @@ class Hra: #tvorba tridy
 
         self.mrizka_neaktivni = [] #vyvtvori prazdnou mrizku
 
-
-
     def nastav_mrizku(self, hodnota = None): #vytvoreni nahodne binarni mrizky #nastav_mrizku(0)  - jenom nuly (1) - jenom 1, (nahodne)
         # nastavi hodnotu bunek nebo
         # nahodne nastavi hodnotu 0 (vsechny bunky mrtve) nebo 1 (vsechny zive)
-        for s in range(self.pocet_sloupcu):
-            for r in range(self.pocet_radku):
+        for r in range(self.pocet_radku):
+            for s in range(self.pocet_sloupcu):
                 if hodnota is None:                 #pokud je hodnota fce None, vlozi se 0 nebo 1
                     hodnota_bunky = random.choice([0, 1])
                 else:                               #jinak hodnota bunky
                     hodnota_bunky = hodnota
-                self.mrizky[self.aktivni_mrizka][s][r] = random.choice([0, 1]) #do mrizky hodnoty 0 nebo 1 nahodne
+                self.mrizky[self.aktivni_mrizka][r][s] = hodnota_bunky #do mrizky hodnoty 0 nebo 1 nahodne
 
     def kresli_mrizku(self):
         self.vycisti_obrazovku()
@@ -51,7 +60,7 @@ class Hra: #tvorba tridy
         # polomer, sirka linie) kdyz se da width=0, kresli i vypln
         for s in range(self.pocet_sloupcu):
             for r in range(self.pocet_radku):
-                if self.mrizky[self.aktivni_mrizka][s][r] == 1:         #definuje, jestli se bude bunka vykreslovat barvou mrtve nebo zive bunky
+                if self.mrizky[self.aktivni_mrizka][r][s] == 1:         #definuje, jestli se bude bunka vykreslovat barvou mrtve nebo zive bunky
                     barva = ZIVA_BUNKA
                 else:
                     barva = MRTVA_BUNKA
@@ -89,6 +98,7 @@ class Hra: #tvorba tridy
             self.zpracuj_akce() #zpracovava vstup z klavesnice
             self.oprav_generaci() #zpracovava generaci
             self.kresli_mrizku()
+            time.sleep(1)
 
 hra = Hra() #tvorba objektu
 hra.spust()
