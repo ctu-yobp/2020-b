@@ -4,19 +4,19 @@ import pygame #https://www.pygame.org/docs/tut/PygameIntro.html
 import random
 
 pygame.display.set_caption("Hra života")
-
-OBRAZOVKA = SIRKA, VYSKA = 640, 480 #rozliseni
-MRTVA_BUNKA = 0, 0, 0 #RGB 8bit cerna obrazovka
-ZIVA_BUNKA = 255, 0, 255 #magenta
-VELIKOST_BUNKY = 10
-
-MAX_FPS = 8 #snimek za sekundu
+OBRAZOVKA = SIRKA, VYSKA = 640, 480  # rozliseni
+MRTVA_BUNKA = 0, 0, 0  # RGB 8bit cerna obrazovka
+ZIVA_BUNKA = 255, 0, 255  # magenta
+VELIKOST_BUNKY = 5
+MAX_FPS = 8  # snimek za sekundu
 cislo_gen = 1
+
 
 # print(temp)
 class Hra: #tvorba tridy
 
     def __init__(self): #metodu zavola python vzdycky, kdyz vytvori novy objekt
+
         pygame.init() #inicializuje vsechny pygame moduly
         self.screen = pygame.display.set_mode(OBRAZOVKA) #tvorba grafickeho okna, cokoliv do nej nakreslime se zobrazi na obrazovce
         self.vycisti_obrazovku()
@@ -31,6 +31,8 @@ class Hra: #tvorba tridy
         self.mrizky = []
         self.init_mrizka() #inicializuje mrizku
         self.nastav_mrizku()
+        self.paused = False
+        self.konec_hry = False
 
     def init_mrizka(self):
 
@@ -46,7 +48,7 @@ class Hra: #tvorba tridy
         self.mrizky.append(vytvor_mrizku()) #aktivni #trojrozmernep pole
         self.mrizky.append(vytvor_mrizku()) #neaktivni
 
-    def nastav_mrizku(self, hodnota = None): #vytvoreni nahodne binarni mrizky #nastav_mrizku(0)  - jenom nuly (1) - jenom 1, (nahodne)
+    def nastav_mrizku(self, hodnota = None, mrizka = 0): #vytvoreni nahodne binarni mrizky #nastav_mrizku(0)  - jenom nuly (1) - jenom 1, (nahodne)
         # nastavi hodnotu bunek nebo
         # nahodne nastavi hodnotu 0 (vsechny bunky mrtve) nebo 1 (vsechny zive)
         for r in range(self.pocet_radku):
@@ -55,13 +57,13 @@ class Hra: #tvorba tridy
                     hodnota_bunky = random.choice([0, 1])
                 else:                               #jinak hodnota bunky
                     hodnota_bunky = hodnota
-                self.mrizky[self.aktivni_mrizka][r][s] = hodnota_bunky #do mrizky hodnoty 0 nebo 1 nahodne
+                self.mrizky[mrizka][r][s] = hodnota_bunky #do mrizky hodnoty 0 nebo 1 nahodne
         # print("poc.hodnota")
         # print(self.mrizky)
 
     def kresli_mrizku(self):
         self.vycisti_obrazovku()
-        #circle_rect = pygame.draw.circle(self.screen, ZIVA_BUNKA, (100, 50), 5, 0)  # kresli kruznici (misto kam kreslit, barva, pozice(stred kruz),
+        #pygame.draw.circle(self.screen, ZIVA_BUNKA, (100, 50), 5, 0)  # kresli kruznici (misto kam kreslit, barva, pozice(stred kruz),
         # polomer, sirka linie) kdyz se da width=0, kresli i vypln
         for s in range(self.pocet_sloupcu):
             for r in range(self.pocet_radku):
@@ -70,8 +72,10 @@ class Hra: #tvorba tridy
                 else:
                     barva = MRTVA_BUNKA
                 # kresli kruh pro kazdou bunku, kterou mame
-                pygame.draw.circle(self.screen, barva, (int(s*VELIKOST_BUNKY + (VELIKOST_BUNKY/2)), #souradnice stredu kruhu
-                                                        int(r*VELIKOST_BUNKY + (VELIKOST_BUNKY/2))), int(VELIKOST_BUNKY/2), 0)
+                #pygame.draw.circle(self.screen, barva, (int(s*VELIKOST_BUNKY + (VELIKOST_BUNKY/2)), #souradnice stredu kruhu
+                                                       # int(r*VELIKOST_BUNKY + (VELIKOST_BUNKY/2))), int(VELIKOST_BUNKY/2), 0)
+                pygame.draw.rect(self.screen, barva, (s*VELIKOST_BUNKY, r*VELIKOST_BUNKY, VELIKOST_BUNKY, VELIKOST_BUNKY), 0)
+
         pygame.display.flip()  # aktualizuje obsah obrazovky - vsechno co jsme nakreslili na obrazovku se vizualizuje
 
     def vycisti_obrazovku(self):
@@ -91,33 +95,43 @@ class Hra: #tvorba tridy
         #zcekni vsechny sousedy a pridej hodnotu
         pocet_zivych_sousedu = 0
 
+        # for r in range(radek_index-1,radek_index+1):
+        #     for s in range(sloupec_index-1,sloupec_index+1):
+        #         #print(r,s)
+        #         if r == 0 and s == 0:
+        #             pocet_zivych_sousedu += 0
+        #         else:
+        #             pocet_zivych_sousedu += self.vrat_bunku(r, s)
         pocet_zivych_sousedu += self.vrat_bunku(radek_index - 1, sloupec_index - 1)
         pocet_zivych_sousedu += self.vrat_bunku(radek_index -1, sloupec_index) #levy horni roh
         pocet_zivych_sousedu += self.vrat_bunku(radek_index - 1,sloupec_index + 1)
 
         pocet_zivych_sousedu += self.vrat_bunku(radek_index, sloupec_index - 1)
         pocet_zivych_sousedu += self.vrat_bunku(radek_index, sloupec_index + 1)
-
+        
         pocet_zivych_sousedu += self.vrat_bunku(radek_index + 1,sloupec_index - 1)
         pocet_zivych_sousedu += self.vrat_bunku(radek_index + 1,sloupec_index)
         pocet_zivych_sousedu += self.vrat_bunku(radek_index + 1,sloupec_index + 1)
+        print(pocet_zivych_sousedu)
 
-        if self.mrizky[self.aktivni_mrizka][radek_index][sloupec_index] == 1: #ziva bunka
+
+        if self.mrizky[self.aktivni_mrizka][radek_index][sloupec_index] == 1:  # ziva bunka
             if pocet_zivych_sousedu > 3:  # Každá živá buňka s více než třemi živými sousedy zemře.
                 return 0
             if pocet_zivych_sousedu < 2:  # Každá živá buňka s méně než dvěma živými sousedy zemře
                 return 0
             if pocet_zivych_sousedu == 2 or pocet_zivych_sousedu == 3:
                 return 1  # Každá živá buňka se dvěma nebo třemi živými sousedy zůstává žít.
-        elif self.mrizky[self.aktivni_mrizka][radek_index][sloupec_index] == 0: #mrtva bunka
+        elif self.mrizky[self.aktivni_mrizka][radek_index][sloupec_index] == 0:  # mrtva bunka
             if pocet_zivych_sousedu == 3:
-                return 1 #Každá mrtvá buňka s právě třemi živými sousedy oživne
-        return self.mrizky[self.aktivni_mrizka][radek_index][sloupec_index] #vratim tu puvodni hodnotu
+                return 1  # Každá mrtvá buňka s právě třemi živými sousedy oživne
+        return self.mrizky[self.aktivni_mrizka][radek_index][sloupec_index]  # vratim tu puvodni hodnotu
 
     def oprav_generaci(self):
             # zjisti, jaka je soucasna generace, pripravuje dalsi generaci
             # aktivuje neaktivni herni mrizku, aby mohl ulozit novou generaci
             # vymeni aktivni mrizku
+            self.nastav_mrizku(0, self.neaktivni_mrizka()) #nastavani na pocatku celou neaktivni mrizku na 0
             for s in range(self.pocet_sloupcu):
                 for r in range(self.pocet_radku):
                     stav_budouci_generace = self.checkni_sousedni_bunky(r,s) #kazde bunce vypocteme jeji budouci stav na zaklade okoli
@@ -134,6 +148,22 @@ class Hra: #tvorba tridy
 
     def zpracuj_akce(self):
         for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.unicode == 's':
+                    print("Pozastaveni hry")
+                    if self.paused:
+                        self.paused = False
+                    else:
+                        self.paused = True
+                if event.unicode == 'r':
+                    print("Nahodne prestaveni mrizky")
+                    self.aktivni_mrizka = 0
+                    self.nastav_mrizku(None, self.aktivni_mrizka)
+                    self.nastav_mrizku(0, self.neaktivni_mrizka())
+                    self.kresli_mrizku()
+                if event.unicode == 'q':
+                    print("Ukonceni hry")
+                    self.konec_hry = True
             # po zmacknuti klavesy "s" bude hra pozastavena
             # po zmacknuti klavesy "r" bude mrizka nahodne prestavena
             # po zmacknuti klavesy "q" bude hra ukoncena
@@ -146,7 +176,11 @@ class Hra: #tvorba tridy
 
     def spust(self): #hlavni cast kodu - spousti
         while True: # donekonacne opakuje tyhle tri funkce
+            if self.konec_hry:
+                return
             self.zpracuj_akce() #zpracovava vstup z klavesnice
+            if self.paused:
+               continue
             self.oprav_generaci() #zpracovava generaci
             self.kresli_mrizku()
             self.fps()
